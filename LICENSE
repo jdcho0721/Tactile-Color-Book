@@ -1,0 +1,38 @@
+MIT License
+
+Copyright (c) 2026 Jun Dong Cho
+
+본 라이선스는 이 저장소에 포함된 뷰어 코드(index.html의 HTML, CSS, JavaScript)에
+한해 적용됩니다. pages/ 폴더에 포함된 「촉각 칼라 북」의 책 콘텐츠(이미지, 도판,
+명화 재구성 일러스트, 본문)는 이 라이선스의 적용을 받지 않으며, 별도의 저작권이
+있습니다. 자세한 내용은 README.md의 "저작권 안내" 항목을 참고하십시오.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
+
+---
+
+NOTICE — Book content exclusion / 콘텐츠 제외 안내
+
+The MIT License above applies only to the viewer source code in this
+repository. It does NOT apply to the page images contained in the pages/
+directory, which reproduce the contents of "촉각 칼라 북 (Tactile Color Book)"
+© 2020 Jun Dong Cho, Dept. of Human ICT Convergence, Sungkyunkwan University.
+All rights to that material are reserved by the original author. Contact
+jdcho@skku.edu for permissions beyond personal, educational, or accessibility
+use.
