@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>촉각 칼라 북 — Tactile Color Book</title>
+<style>
+  :root{
+    --ink:#1f2430;
+    --paper:#faf7f2;
+    --rose:#e8536b;
+    --amber:#f0a83c;
+    --leaf:#8bbf5a;
+    --sky:#3f7fc1;
+    --violet:#8c7fd1;
+    --line:#e4ddd2;
+    --panel:#ffffff;
+    --shadow: 0 18px 50px -20px rgba(31,36,48,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+    min-height:100vh;
+  }
+
+  /* ── Header ── */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(250,247,242,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:14px 22px;
+    display:flex; align-items:center; gap:16px; justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px; min-width:0;}
+  .brand .dot{
+    width:14px; height:14px; border-radius:50%;
+    background:conic-gradient(from 180deg, var(--rose), var(--amber), var(--leaf), var(--sky), var(--violet), var(--rose));
+    flex-shrink:0;
+  }
+  .brand-text{display:flex; flex-direction:column; line-height:1.15; min-width:0;}
+  .brand-text b{font-size:1.05rem; letter-spacing:-0.01em;}
+  .brand-text span{font-size:0.72rem; color:#8a8478;}
+
+  .toolbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .toolbar button{
+    border:1px solid var(--line); background:var(--panel); color:var(--ink);
+    border-radius:10px; padding:8px 14px; font-size:0.85rem; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .toolbar button:hover{transform:translateY(-1px); box-shadow:var(--shadow); background:#fff;}
+  .toolbar button:active{transform:translateY(0);}
+  .toolbar button:disabled{opacity:0.35; cursor:not-allowed; transform:none; box-shadow:none;}
+  #pageIndicator{
+    font-size:0.85rem; color:#5b5648; min-width:86px; text-align:center;
+    font-variant-numeric: tabular-nums;
+  }
+  .toc-btn{
+    background:var(--ink) !important; color:#fff !important; border-color:var(--ink) !important;
+  }
+
+  /* ── Layout ── */
+  .stage{
+    display:flex; justify-content:center; padding:36px 16px 80px;
+  }
+  .book-shell{
+    width:min(880px, 100%);
+  }
+  .page-frame{
+    background:var(--panel);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+    border:1px solid var(--line);
+  }
+  .page-frame img{
+    display:block; width:100%; height:auto; user-select:none;
+    transform-origin:center top;
+  }
+  .page-frame.zoomed{overflow:auto; max-height:80vh;}
+  .page-frame.zoomed img{cursor:zoom-out;}
+  .page-frame:not(.zoomed) img{cursor:zoom-in;}
+
+  .nav-edge{
+    position:absolute; top:0; bottom:0; width:18%;
+    display:flex; align-items:center;
+    opacity:0; transition:opacity .15s ease;
+    background:linear-gradient(90deg, rgba(0,0,0,0.05), transparent);
+  }
+  .page-frame.zoomed .nav-edge{display:none;}
+  .nav-edge.right{right:0; justify-content:flex-end; background:linear-gradient(270deg, rgba(0,0,0,0.05), transparent);}
+  .nav-edge:hover{opacity:1;}
+  .nav-edge span{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(31,36,48,0.78); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 10px; font-size:1.1rem;
+  }
+
+  .meta-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin:14px 4px 22px; color:#8a8478; font-size:0.8rem;
+  }
+  .meta-row .chip{
+    background:var(--panel); border:1px solid var(--line); border-radius:999px;
+    padding:4px 12px; font-size:0.75rem; color:#5b5648;
+  }
+
+  .progress-track{
+    height:4px; background:var(--line); border-radius:99px; overflow:hidden; margin:0 4px 4px;
+  }
+  .progress-fill{
+    height:100%; border-radius:99px;
+    background:linear-gradient(90deg, var(--rose), var(--amber), var(--leaf), var(--sky));
+    transition:width .25s ease;
+  }
+
+  /* ── thumbnail strip ── */
+  .filmstrip{
+    display:flex; gap:10px; overflow-x:auto; padding:14px 4px 4px;
+    scrollbar-width:thin;
+  }
+  .filmstrip::-webkit-scrollbar{height:6px;}
+  .filmstrip::-webkit-scrollbar-thumb{background:var(--line); border-radius:99px;}
+  .thumb{
+    flex:0 0 auto; width:54px; border-radius:7px; overflow:hidden;
+    border:2px solid transparent; cursor:pointer; opacity:0.65;
+    transition:opacity .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .thumb img{display:block; width:100%; height:auto;}
+  .thumb:hover{opacity:1; transform:translateY(-2px);}
+  .thumb.active{opacity:1; border-color:var(--rose);}
+
+  /* ── TOC drawer ── */
+  .scrim{
+    position:fixed; inset:0; background:rgba(20,20,24,0.45);
+    opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:90;
+  }
+  .scrim.show{opacity:1; pointer-events:auto;}
+  .drawer{
+    position:fixed; top:0; right:0; height:100%; width:min(420px, 92vw);
+    background:var(--paper); z-index:100;
+    transform:translateX(100%); transition:transform .25s ease;
+    box-shadow:-20px 0 60px -20px rgba(0,0,0,0.4);
+    display:flex; flex-direction:column;
+  }
+  .drawer.show{transform:translateX(0);}
+  .drawer-head{
+    padding:22px 24px 16px; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:flex-start;
+  }
+  .drawer-head h2{margin:0 0 4px; font-size:1.3rem;}
+  .drawer-head p{margin:0; font-size:0.8rem; color:#8a8478;}
+  .drawer-close{
+    border:none; background:transparent; font-size:1.3rem; cursor:pointer; color:#8a8478;
+    line-height:1; padding:4px;
+  }
+  .drawer-body{overflow-y:auto; padding:10px 12px 30px; flex:1;}
+
+  .toc-chapter{margin-top:18px;}
+  .toc-chapter:first-child{margin-top:6px;}
+  .toc-chapter-title{
+    display:flex; align-items:center; gap:10px;
+    font-size:0.95rem; font-weight:700; padding:8px 12px;
+    color:var(--ink);
+  }
+  .toc-chapter-title .num{
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.78rem; color:#fff;
+  }
+  .ch1 .num{background:var(--leaf);}
+  .ch2 .num{background:var(--amber);}
+  .ch3 .num{background:var(--violet);}
+
+  .toc-item{
+    width:100%; text-align:left; border:none; background:transparent;
+    padding:9px 14px 9px 48px; border-radius:10px; cursor:pointer;
+    font-size:0.86rem; color:#4a4638;
+    display:flex; justify-content:space-between; gap:10px;
+    transition:background .12s ease, color .12s ease;
+  }
+  .toc-item:hover{background:#fff; color:var(--ink);}
+  .toc-item.current{background:var(--ink); color:#fff;}
+  .toc-item .pg{color:#a39d8e; font-variant-numeric: tabular-nums; flex-shrink:0;}
+  .toc-item.current .pg{color:#cfc9bb;}
+
+  kbd{
+    background:#fff; border:1px solid var(--line); border-radius:6px;
+    padding:1px 6px; font-size:0.75rem; font-family:inherit;
+  }
+  .hint{
+    text-align:center; color:#a39d8e; font-size:0.78rem; margin-top:18px;
+  }
+
+  @media (max-width:640px){
+    header{padding:12px 14px;}
+    .brand-text span{display:none;}
+    .toolbar button span.lbl{display:none;}
+    .stage{padding:20px 10px 60px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="dot"></div>
+    <div class="brand-text">
+      <b>촉각 칼라 북</b>
+      <span>Tactile Color Book · 성균관대학교 휴먼ICT융합학과</span>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button id="prevBtn" title="이전 페이지 (←)">‹ <span class="lbl">이전</span></button>
+    <span id="pageIndicator">1 / 68</span>
+    <button id="nextBtn" title="다음 페이지 (→)"><span class="lbl">다음</span> ›</button>
+    <button id="tocBtn" class="toc-btn" title="목차 (T)">☰ <span class="lbl">목차</span></button>
+  </div>
+</header>
+
+<div class="stage">
+  <div class="book-shell">
+    <div class="page-frame" id="pageFrame">
+      <img id="pageImg" src="pages/page-01.jpg" alt="촉각 칼라 북 표지">
+      <div class="nav-edge left" id="edgeLeft"><span>‹</span></div>
+      <div class="nav-edge right" id="edgeRight"><span>›</span></div>
+    </div>
+
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:1.5%"></div></div>
+    <div class="meta-row">
+      <span id="sectionLabel" class="chip">표지</span>
+      <span id="pageCount">총 68페이지</span>
+    </div>
+
+    <div class="filmstrip" id="filmstrip"></div>
+    <div class="hint">방향키 <kbd>←</kbd> <kbd>→</kbd> 로 페이지 이동 · <kbd>T</kbd> 로 목차 열기 · 이미지를 클릭하면 확대됩니다</div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2>목차 _ Content</h2>
+      <p>원하는 항목을 누르면 해당 페이지로 이동합니다</p>
+    </div>
+    <button class="drawer-close" id="drawerClose" aria-label="닫기">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<script>
+const TOTAL = 68;
+
+// PDF 물리적 페이지 순서를 그대로 따름 (검증된 읽기 순서)
+const TOC = [
+  { chapter:"front", title:"표지 · 머리말", page:1 },
+  { chapter:"front", title:"목차", page:3 },
+  { chapter:"front", title:"점자 표기 안내", page:6 },
+
+  { chapter:"ch1", num:"1장", title:"칼라 기초 이론", page:7, isDivider:true },
+  { chapter:"ch1", title:"교재 개발 동기", page:8 },
+  { chapter:"ch1", title:"칼라 패턴에 대한 사용 후기", page:10 },
+  { chapter:"ch1", title:"미술작품에서의 칼라의 의미", page:11 },
+  { chapter:"ch1", title:"시각장애인 안디 홀처", page:13 },
+  { chapter:"ch1", title:"칸딘스키의 칼라와 악기 연상", page:15 },
+  { chapter:"ch1", title:"색의 추상적/구체적 연상 상징물", page:17 },
+
+  { chapter:"ch2", num:"2장", title:"칼라 패턴", page:21, isDivider:true },
+  { chapter:"ch2", title:"패턴으로 표현하고자 하는 칼라의 종류", page:22 },
+  { chapter:"ch2", title:"고명도, 고채도, 중채도, 저명도 정의", page:23 },
+  { chapter:"ch2", title:"천지인 칼라 패턴의 디자인 전략", page:25 },
+  { chapter:"ch2", title:"천지인 칼라 패턴과 연상물", page:31 },
+  { chapter:"ch2", title:"천지인 칼라 패턴의 명도 및 채도", page:32 },
+  { chapter:"ch2", title:"천지인 칼라 패턴", page:32 },
+  { chapter:"ch2", title:"삼각형 칼라 패턴의 디자인 전략", page:34 },
+  { chapter:"ch2", title:"삼각형 칼라 패턴과 연상물", page:35 },
+  { chapter:"ch2", title:"삼각형 칼라 패턴의 명도 및 채도", page:37 },
+  { chapter:"ch2", title:"삼각형 칼라 패턴", page:38 },
+
+  { chapter:"ch3", num:"3장", title:"칼라와 형태를 촉각화한 명화 작품 5선", page:39, isDivider:true },
+  { chapter:"ch3", title:"빈센트 반 고흐 — 별이 빛나는 밤", page:41 },
+  { chapter:"ch3", title:"파블로 피카소 — 아비뇽의 처녀들", page:45 },
+  { chapter:"ch3", title:"앙리 마티스 — 춤", page:51 },
+  { chapter:"ch3", title:"프리다 칼로 — 원숭이와 함께 한 자화상", page:57 },
+  { chapter:"ch3", title:"폴 고갱 — 아레아레아, 기쁨", page:63 },
+];
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function pageSrc(n){ return `pages/page-${pad(n)}.jpg`; }
+
+function sectionForPage(p){
+  // find the last TOC entry whose page <= p
+  let current = TOC[0];
+  for(const t of TOC){ if(t.page <= p) current = t; else break; }
+  return current;
+}
+
+let curPage = 1;
+let zoomed = false;
+
+const pageImg = document.getElementById('pageImg');
+const pageFrame = document.getElementById('pageFrame');
+const pageIndicator = document.getElementById('pageIndicator');
+const progressFill = document.getElementById('progressFill');
+const sectionLabel = document.getElementById('sectionLabel');
+const filmstrip = document.getElementById('filmstrip');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function renderPage(n, {scroll=true} = {}){
+  curPage = Math.min(Math.max(1, n), TOTAL);
+  pageImg.src = pageSrc(curPage);
+  const sec = sectionForPage(curPage);
+  pageImg.alt = `${sec.title} (페이지 ${curPage})`;
+  pageIndicator.textContent = `${curPage} / ${TOTAL}`;
+  progressFill.style.width = (curPage/TOTAL*100) + '%';
+  sectionLabel.textContent = sec.title;
+  prevBtn.disabled = curPage === 1;
+  nextBtn.disabled = curPage === TOTAL;
+  zoomed = false;
+  pageFrame.classList.remove('zoomed');
+  updateFilmstripActive();
+  updateTocActive();
+  if(scroll) document.getElementById(`thumb-${curPage}`)?.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+}
+
+function updateFilmstripActive(){
+  document.querySelectorAll('.thumb').forEach(el=>{
+    el.classList.toggle('active', Number(el.dataset.page) === curPage);
+  });
+}
+
+function buildFilmstrip(){
+  let html = '';
+  for(let i=1;i<=TOTAL;i++){
+    html += `<div class="thumb" id="thumb-${i}" data-page="${i}" title="페이지 ${i}">
+      <img src="${pageSrc(i)}" alt="페이지 ${i} 미리보기" loading="lazy">
+    </div>`;
+  }
+  filmstrip.innerHTML = html;
+  filmstrip.querySelectorAll('.thumb').forEach(el=>{
+    el.addEventListener('click', ()=> renderPage(Number(el.dataset.page)));
+  });
+}
+
+document.getElementById('edgeLeft').addEventListener('click', ()=> renderPage(curPage-1));
+document.getElementById('edgeRight').addEventListener('click', ()=> renderPage(curPage+1));
+prevBtn.addEventListener('click', ()=> renderPage(curPage-1));
+nextBtn.addEventListener('click', ()=> renderPage(curPage+1));
+
+pageFrame.addEventListener('click', (e)=>{
+  if(e.target.closest('.nav-edge')) return;
+  zoomed = !zoomed;
+  pageFrame.classList.toggle('zoomed', zoomed);
+  pageImg.style.transform = zoomed ? 'scale(1.6)' : 'scale(1)';
+  pageImg.style.transition = 'transform .2s ease';
+});
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'ArrowRight') renderPage(curPage+1);
+  if(e.key === 'ArrowLeft') renderPage(curPage-1);
+  if(e.key.toLowerCase() === 't') toggleDrawer(true);
+  if(e.key === 'Escape') toggleDrawer(false);
+});
+
+// ── TOC drawer ──
+const drawer = document.getElementById('drawer');
+const scrim = document.getElementById('scrim');
+const drawerBody = document.getElementById('drawerBody');
+
+const chapterMeta = {
+  front: {label:null},
+  ch1: {label:'1장', cls:'ch1'},
+  ch2: {label:'2장', cls:'ch2'},
+  ch3: {label:'3장', cls:'ch3'},
+};
+
+function buildToc(){
+  let html = '';
+  let openChapter = null;
+  TOC.forEach(item=>{
+    if(item.chapter !== openChapter){
+      if(openChapter !== null) html += `</div>`;
+      openChapter = item.chapter;
+      if(item.chapter === 'front'){
+        html += `<div class="toc-chapter"><div class="toc-chapter-title"><span class="num" style="background:#c9c2b3;">·</span>안내</div>`;
+      } else {
+        const m = chapterMeta[item.chapter];
+        html += `<div class="toc-chapter ${m.cls}"><div class="toc-chapter-title"><span class="num">${m.label[0]}</span>${item.title && item.isDivider ? item.title : (item.chapter==='ch1'?'칼라 기초 이론':item.chapter==='ch2'?'칼라 패턴':'칼라와 형태를 촉각화한 명화 작품 5선')}</div>`;
+      }
+    }
+    if(item.isDivider) return; // chapter title already shown in header
+    html += `<button class="toc-item" data-page="${item.page}"><span>${item.title}</span><span class="pg">p.${item.page}</span></button>`;
+  });
+  html += `</div>`;
+  drawerBody.innerHTML = html;
+  drawerBody.querySelectorAll('.toc-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      renderPage(Number(btn.dataset.page));
+      toggleDrawer(false);
+    });
+  });
+}
+
+function updateTocActive(){
+  const sec = sectionForPage(curPage);
+  document.querySelectorAll('.toc-item').forEach(btn=>{
+    btn.classList.toggle('current', Number(btn.dataset.page) === sec.page);
+  });
+}
+
+function toggleDrawer(show){
+  drawer.classList.toggle('show', show);
+  scrim.classList.toggle('show', show);
+}
+document.getElementById('tocBtn').addEventListener('click', ()=> toggleDrawer(true));
+document.getElementById('drawerClose').addEventListener('click', ()=> toggleDrawer(false));
+scrim.addEventListener('click', ()=> toggleDrawer(false));
+
+// touch swipe
+let touchX = null;
+pageFrame.addEventListener('touchstart', e=> touchX = e.touches[0].clientX);
+pageFrame.addEventListener('touchend', e=>{
+  if(touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(Math.abs(dx) > 50){ dx < 0 ? renderPage(curPage+1) : renderPage(curPage-1); }
+  touchX = null;
+});
+
+buildFilmstrip();
+buildToc();
+renderPage(1, {scroll:false});
+</script>
+
+</body>
+</html>
