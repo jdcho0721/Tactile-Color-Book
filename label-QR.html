@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>전시 표준 캡션 라벨 - 조준동</title>
+    <!-- 미술관 표준 폰트 (Noto Serif KR 및 Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+    <!-- QR 코드 생성 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #e5e5e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            -webkit-print-color-adjust: exact;
+        }
+        /* 뮤지엄 표준 미니멀 캡션 라벨 규격 */
+        .exhibition-label {
+            width: 380px;
+            background: #ffffff;
+            border-left: 3px solid #111111; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .content-area {
+            margin-bottom: 24px;
+        }
+        /* 작가명 */
+        .artist-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #222;
+            margin: 0 0 2px 0;
+            letter-spacing: -0.5px;
+        }
+        .artist-name-en {
+            font-size: 13px;
+            font-weight: 300;
+            color: #666;
+            margin: 0 0 16px 0;
+        }
+        /* 작품명 (명조체 적용) */
+        .artwork-title {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 17px;
+            font-weight: 600;
+            color: #111;
+            margin: 0 0 4px 0;
+            line-height: 1.4;
+        }
+        .artwork-title-en {
+            font-family: 'Noto Serif KR', serif;
+            font-style: italic;
+            font-size: 14px;
+            font-weight: 400;
+            color: #555;
+            margin: 0 0 12px 0;
+        }
+        /* 제작 연도 */
+        .artwork-year {
+            font-size: 13px;
+            color: #555;
+            margin: 0;
+            font-weight: 300;
+        }
+        /* 하단 QR 및 안내 영역 */
+        .footer-area {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+            margin-top: 10px;
+        }
+        .qr-box {
+            width: 64px;
+            height: 64px;
+            background: #fff;
+            padding: 4px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .qr-guide {
+            margin-left: 12px;
+        }
+        .qr-guide p {
+            margin: 0;
+            font-size: 11px;
+            color: #777;
+            line-height: 1.3;
+        }
+        .qr-guide .guide-title {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .exhibition-label {
+                box-shadow: none;
+                border: 1px solid #ccc;
+                border-left: 3px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="exhibition-label">
+        <div class="content-area">
+            <!-- 작가명 -->
+            <div class="artist-name">조준동</div>
+            <div class="artist-name-en">Cho, Jun Dong</div>
+            
+            <!-- 작품명 -->
+            <div class="artwork-title">촉각 칼라 북 (훈맹정색)</div>
+            <div class="artwork-title-en">Tactile Color Book (Hunmaengjeongsaek)</div>
+            
+            <!-- 제작 연도 -->
+            <div class="artwork-year">2026</div>
+        </div>
+
+        <!-- 하단 디지털 연계 영역 (QR 코드) -->
+        <div class="footer-area">
+            <div id="qrcode" class="qr-box"></div>
+            <div class="qr-guide">
+                <div class="guide-title">디지털 체험 링크</div>
+                <p>스마트폰 카메라로 스캔하시면<br>온라인 작품 시스템으로 연결됩니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 지정된 URL로 QR 코드 생성
+        var targetUrl = "https://jdcho0721.github.io/Tactile-Color-Book/";
+        new QRCode(document.getElementById("qrcode"), {
+            text: targetUrl,
+            width: 54,
+            height: 54,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.M
+        });
+    </script>
+
+</body>
+</html>
